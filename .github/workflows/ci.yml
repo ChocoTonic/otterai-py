@@ -24,6 +24,12 @@ jobs:
             - name: Set up uv
               uses: astral-sh/setup-uv@v7
 
+            - name: Debug credentials
+              run: |
+                  echo "OTTERAI_USERNAME length: ${#OTTERAI_USERNAME}"
+                  echo "OTTERAI_PASSWORD length: ${#OTTERAI_PASSWORD}"
+                  echo "TEST_OTTERAI_SPEECH_OTID length: ${#TEST_OTTERAI_SPEECH_OTID}"
+
             - name: Install dependencies
               run: make init-dev
 
