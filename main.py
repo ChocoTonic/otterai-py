@@ -5,10 +5,10 @@ from dotenv import load_dotenv
 
 from otterai.otterai import OtterAI, OtterAIException
 
-load_dotenv()
-
 
 def main():
+    load_dotenv()
+
     try:
         otter = OtterAI()
 
