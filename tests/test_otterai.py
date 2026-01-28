@@ -60,6 +60,12 @@ def test_get_speeches(logged_in_otter):
     assert response["status"] == 200
 
 
+def test_get_notification_settings(logged_in_otter):
+    response = logged_in_otter.get_notification_settings()
+    assert response["status"] == 200
+    assert "data" in response
+
+
 def test_get_speakers_invalid_userid():
     otter = OtterAI()
     with pytest.raises(OtterAIException, match="userid is invalid"):
