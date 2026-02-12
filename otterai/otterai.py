@@ -64,7 +64,14 @@ class OtterAI:
 
         return self._handle_response(response)
 
-    def get_speeches(self, folder=0, page_size=45, source="owned"):
+    def get_speeches(
+        self,
+        folder=0,
+        page_size=45,
+        source="owned",
+        last_load_ts=None,
+        modified_after=None,
+    ):
         speeches_url = OtterAI.API_BASE_URL + "speeches"
         if self._is_userid_invalid():
             raise OtterAIException("userid is invalid")
@@ -75,6 +82,10 @@ class OtterAI:
             "page_size": page_size,
             "source": source,
         }
+        if last_load_ts is not None:
+            payload["last_load_ts"] = last_load_ts
+        if modified_after is not None:
+            payload["modified_after"] = modified_after
 
         response = self._session.get(speeches_url, params=payload)
 
