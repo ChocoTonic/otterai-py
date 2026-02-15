@@ -264,7 +264,7 @@ class OtterAI:
         return self._handle_response(response)
 
     def speech_start(self):
-        speech_start_uel = OtterAI.API_BASE_URL + "speech_start"
+        speech_start_url = OtterAI.API_BASE_URL + "speech_start"
         ### TODO
         # In the browser a websocket session is opened
         # wss://ws.aisense.com/api/v2/client/speech?token=ey...
