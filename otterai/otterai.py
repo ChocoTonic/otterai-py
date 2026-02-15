@@ -263,6 +263,28 @@ class OtterAI:
 
         return self._handle_response(response)
 
+    def list_folder_speeches(
+        self, folder_id, page_size=12, last_load_speech_id=None, speech_metadata=True
+    ):
+        """
+        Fetch speeches in a folder with optional pagination and metadata.
+        """
+        list_folder_speeches_url = OtterAI.API_BASE_URL + "list_folder_speeches"
+        if self._is_userid_invalid():
+            raise OtterAIException("userid is invalid")
+
+        payload = {
+            "userid": self._userid,
+            "folder_id": folder_id,
+            "page_size": page_size,
+            "speech_metadata": str(speech_metadata).lower(),
+        }
+        if last_load_speech_id:
+            payload["last_load_speech_id"] = last_load_speech_id
+
+        response = self._session.get(list_folder_speeches_url, params=payload)
+        return self._handle_response(response)
+
     def speech_start(self):
         speech_start_url = OtterAI.API_BASE_URL + "speech_start"
         ### TODO
