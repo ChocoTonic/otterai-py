@@ -13,6 +13,8 @@ Unofficial Python API for [otter.ai](http://otter.ai)
     -   [Speeches](#speeches)
     -   [Speakers](#speakers)
     -   [Folders](#folders)
+    -   [Calendar](#calendar)
+    -   [Live recording](#live-recording)
     -   [Groups](#groups)
     -   [Notifications](#notifications)
 -   [Exceptions](#exceptions)
@@ -108,11 +110,37 @@ Set speech title:
 otter.set_speech_title(OTID, TITLE)
 ```
 
-#### TODO
+### Live recording
 
--   Start a live speech
--   Stop a live speech
--   Assign a speaker to a speech transcript
+Live recording uses Otter's undocumented web API and may change without notice.
+The recorder captures 16 kHz, mono, signed 16-bit PCM and streams it to the
+short-lived WebSocket URL returned by `speech_start`.
+
+```python
+from otterai import LiveSpeechRecorder
+
+recorder = LiveSpeechRecorder(
+    otter,
+    device=7,
+    folder_id=2133370,
+    title="Manual recording",
+).start()
+
+# Later:
+recorder.stop()
+```
+
+Use an Otter calendar meeting by passing its numeric `calendar_meeting_id` and
+its `meeting_otid` from `get_current_calendar_meetings()`.
+
+The lower-level API methods are also available:
+
+```python
+started = otter.speech_start(folder_id=FOLDER_ID, event_id=EVENT_ID)
+otter.stop_speech(OTID, START_TIME, SAMPLE_COUNT)
+```
+
+Do not log or persist the `token` or `ws_url` returned by `speech_start`.
 
 ### Speakers
 
@@ -135,6 +163,55 @@ Get all folders:
 ```python
 otter.get_folders()
 ```
+
+### Calendar
+
+List meetings synced through Otter's Google or Microsoft calendar integration:
+
+```python
+otter.get_current_calendar_meetings()
+```
+
+### Command line and Stream Deck
+
+Set credentials in the environment, or in the repository's ignored `.env`
+file, rather than placing a password in a Stream Deck command:
+
+```powershell
+$env:OTTERAI_USERNAME = "you@example.com"
+$env:OTTERAI_PASSWORD = "..."
+```
+
+```dotenv
+OTTERAI_USERNAME="you@example.com"
+OTTERAI_PASSWORD="..."
+```
+
+List microphones and synced calendar meetings:
+
+```powershell
+otterai devices
+otterai calendar
+```
+
+Record in the foreground until Ctrl+C:
+
+```powershell
+otterai record --device 7 --folder-id 2133370 --title "Manual recording"
+```
+
+Use separate Start and Stop commands for Stream Deck buttons:
+
+```powershell
+otterai start --device 7 --folder-id 2133370 --title "Manual recording"
+otterai status
+otterai stop
+```
+
+To associate a recording with a synced event, add `--calendar-meeting-id` and
+`--meeting-otid` using values returned by `otterai calendar`.
+
+Background state and logs are stored in `%LOCALAPPDATA%\otterai-py` on Windows.
 
 ### Groups
 

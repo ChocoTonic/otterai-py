@@ -13,6 +13,8 @@ load_dotenv()
 def logged_in_otter():
     username = os.getenv("OTTERAI_USERNAME")
     password = os.getenv("OTTERAI_PASSWORD")
+    if not username or not password:
+        pytest.skip("OTTERAI_USERNAME and OTTERAI_PASSWORD are not configured")
     otter = OtterAI()
     otter.login(username, password)
     return otter
@@ -126,6 +128,7 @@ def test_get_folders_no_userid_expected_exception():
         otter.get_folders()
 
 
-def test_stop_speech_noop_expected_no_exception():
+def test_stop_speech_no_userid_expected_exception():
     otter = OtterAI()
-    otter.stop_speech()
+    with pytest.raises(OtterAIException, match="userid is invalid"):
+        otter.stop_speech("dummy-otid", 1, 16000, end_time=2)
