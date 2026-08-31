@@ -164,6 +164,24 @@ Get all folders:
 otter.get_folders()
 ```
 
+List one page of conversations that are not assigned to a folder:
+
+```python
+otter.list_unsorted_speeches(page_size=45)
+```
+
+Assign or move conversations to a folder:
+
+```python
+otter.move_speeches_to_folder(FOLDER_ID, [OTID])
+```
+
+Remove conversations from a folder and return them to Unsorted:
+
+```python
+otter.remove_speeches_from_folder(FOLDER_ID, [OTID])
+```
+
 ### Calendar
 
 List meetings synced through Otter's Google or Microsoft calendar integration:

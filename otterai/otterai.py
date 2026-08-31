@@ -103,6 +103,17 @@ class OtterAI:
 
         return self._handle_response(response)
 
+    def list_unsorted_speeches(
+        self, page_size=45, last_load_ts=None, modified_after=None
+    ):
+        """Return one page of owned speeches that are not assigned to a folder."""
+        return self.get_speeches(
+            page_size=page_size,
+            source="nofolder",
+            last_load_ts=last_load_ts,
+            modified_after=modified_after,
+        )
+
     def get_speech(self, speech_id):
         speech_url = OtterAI.API_BASE_URL + "speech"
         if self._is_userid_invalid():
@@ -307,6 +318,49 @@ class OtterAI:
 
         response = self._session.get(list_folder_speeches_url, params=payload)
         return self._handle_response(response)
+
+    def add_speeches_to_folder(self, folder_id, speech_ids):
+        """Assign one or more speeches to a folder.
+
+        Otter permits one folder per speech, so assigning a speech that is already
+        filed moves it to the destination folder.
+        """
+        if self._is_userid_invalid():
+            raise OtterAIException("userid is invalid")
+        speech_ids = self._validate_speech_ids(speech_ids)
+        response = self._session.post(
+            OtterAI.API_BASE_URL + "add_folder_speeches",
+            params={"userid": self._userid, "folder_id": int(folder_id)},
+            headers=self._csrf_headers(f"https://otter.ai/folder/{folder_id}"),
+            files={"speech_otid_list": (None, ",".join(speech_ids))},
+        )
+        return self._handle_response(response)
+
+    def move_speeches_to_folder(self, folder_id, speech_ids):
+        """Move one or more speeches to a folder."""
+        return self.add_speeches_to_folder(folder_id, speech_ids)
+
+    def remove_speeches_from_folder(self, folder_id, speech_ids):
+        """Remove one or more speeches from a folder, returning them to Unsorted."""
+        if self._is_userid_invalid():
+            raise OtterAIException("userid is invalid")
+        speech_ids = self._validate_speech_ids(speech_ids)
+        response = self._session.post(
+            OtterAI.API_BASE_URL + "remove_folder_speeches",
+            params={"userid": self._userid, "folder_id": int(folder_id)},
+            headers=self._csrf_headers(f"https://otter.ai/folder/{folder_id}"),
+            files={"otid_list": (None, ",".join(speech_ids))},
+        )
+        return self._handle_response(response)
+
+    @staticmethod
+    def _validate_speech_ids(speech_ids):
+        if isinstance(speech_ids, str):
+            speech_ids = [speech_ids]
+        speech_ids = [str(speech_id).strip() for speech_id in speech_ids]
+        if not speech_ids or any(not speech_id for speech_id in speech_ids):
+            raise ValueError("speech_ids must contain at least one non-empty ID")
+        return speech_ids
 
     def speech_start(
         self,

@@ -1,4 +1,5 @@
 import os
+from unittest.mock import Mock
 
 import pytest
 from dotenv import load_dotenv
@@ -60,6 +61,75 @@ def test_get_speakers_valid_session_expected_200(logged_in_otter):
 def test_get_speeches_valid_session_expected_200(logged_in_otter):
     response = logged_in_otter.get_speeches()
     assert response["status"] == 200
+
+
+def test_list_unsorted_speeches_uses_nofolder_source():
+    otter = OtterAI()
+    otter.get_speeches = Mock(return_value={"status": 200, "data": {}})
+
+    response = otter.list_unsorted_speeches(page_size=20, last_load_ts=123)
+
+    assert response["status"] == 200
+    otter.get_speeches.assert_called_once_with(
+        page_size=20,
+        source="nofolder",
+        last_load_ts=123,
+        modified_after=None,
+    )
+
+
+def test_move_speeches_to_folder_posts_library_endpoint():
+    otter = OtterAI()
+    otter._userid = 42
+    otter._cookies = {"csrftoken": "csrf"}
+    response = Mock(status_code=200)
+    response.json.return_value = {"status": "OK"}
+    otter._session.post = Mock(return_value=response)
+
+    result = otter.move_speeches_to_folder(123, ["one", "two"])
+
+    assert result["status"] == 200
+    otter._session.post.assert_called_once_with(
+        OtterAI.API_BASE_URL + "add_folder_speeches",
+        params={"userid": 42, "folder_id": 123},
+        headers={
+            "origin": "https://otter.ai",
+            "referer": "https://otter.ai/folder/123",
+            "x-csrftoken": "csrf",
+        },
+        files={"speech_otid_list": (None, "one,two")},
+    )
+
+
+def test_remove_speeches_from_folder_posts_library_endpoint():
+    otter = OtterAI()
+    otter._userid = 42
+    otter._cookies = {"csrftoken": "csrf"}
+    response = Mock(status_code=200)
+    response.json.return_value = {"status": "OK"}
+    otter._session.post = Mock(return_value=response)
+
+    result = otter.remove_speeches_from_folder(123, "one")
+
+    assert result["status"] == 200
+    otter._session.post.assert_called_once_with(
+        OtterAI.API_BASE_URL + "remove_folder_speeches",
+        params={"userid": 42, "folder_id": 123},
+        headers={
+            "origin": "https://otter.ai",
+            "referer": "https://otter.ai/folder/123",
+            "x-csrftoken": "csrf",
+        },
+        files={"otid_list": (None, "one")},
+    )
+
+
+def test_move_speeches_to_folder_rejects_empty_ids():
+    otter = OtterAI()
+    otter._userid = 42
+
+    with pytest.raises(ValueError, match="speech_ids"):
+        otter.move_speeches_to_folder(123, [])
 
 
 def test_get_notification_settings_valid_session_expected_200_data(logged_in_otter):
