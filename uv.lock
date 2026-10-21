@@ -424,6 +424,7 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "black" },
+    { name = "certifi" },
     { name = "pytest" },
     { name = "pytest-cov" },
     { name = "python-dotenv" },
@@ -444,6 +445,7 @@ dev = [
 requires-dist = [
     { name = "black", specifier = ">=25.11.0" },
     { name = "black", marker = "extra == 'dev'" },
+    { name = "certifi", specifier = ">=2026.10.19" },
     { name = "pytest", specifier = ">=8.4.2" },
     { name = "pytest", marker = "extra == 'dev'" },
     { name = "pytest-cov", specifier = ">=7.0.0" },
