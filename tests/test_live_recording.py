@@ -1,9 +1,12 @@
 import json
+import ssl
 import time
 from types import SimpleNamespace
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
+import certifi
 import pytest
+import websocket
 
 from otterai import OtterAI, OtterAIException
 from otterai import live
@@ -161,6 +164,25 @@ def test_live_recorder_sends_start_pcm_stop_and_finish(monkeypatch):
     recorder = live.LiveSpeechRecorder(otter, device=7, folder_id=123).start()
     time.sleep(0.01)
     recorder.stop()
+
+    options = websocket_module.create_connection.call_args.kwargs["sslopt"]
+    context = options["context"]
+    assert context.verify_mode == ssl.CERT_REQUIRED
+    assert context.check_hostname
+    expected = ssl.create_default_context(cafile=certifi.where())
+    assert context.get_ca_certs(binary_form=True) == expected.get_ca_certs(
+        binary_form=True
+    )
+    assert not any(
+        "AAA Certificate Services" in str(cert["subject"])
+        or "emSign Root TLS CA - G3" in str(cert["subject"])
+        for cert in context.get_ca_certs()
+    )
+    # Exercise the installed websocket-client TLS wrapper, intercepting only
+    # this context's final socket wrap so no socket or account is contacted.
+    with patch.object(context, "wrap_socket", return_value=object()) as wrap:
+        websocket._http._ssl_socket(object(), options, "offline.invalid")
+    assert wrap.call_args.kwargs["server_hostname"] == "offline.invalid"
 
     assert socket.sent_text[0] == {
         "action": "start",
