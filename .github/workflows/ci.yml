@@ -13,9 +13,9 @@ jobs:
         runs-on: ubuntu-latest
 
         env:
-            OTTERAI_USERNAME: ${{ secrets.OTTERAI_USERNAME }}
-            OTTERAI_PASSWORD: ${{ secrets.OTTERAI_PASSWORD }}
-            TEST_OTTERAI_SPEECH_OTID: ${{ secrets.TEST_OTTERAI_SPEECH_OTID }}
+            OTTERAI_USERNAME: ${{ github.event_name != 'pull_request' && secrets.OTTERAI_USERNAME || '' }}
+            OTTERAI_PASSWORD: ${{ github.event_name != 'pull_request' && secrets.OTTERAI_PASSWORD || '' }}
+            TEST_OTTERAI_SPEECH_OTID: ${{ github.event_name != 'pull_request' && secrets.TEST_OTTERAI_SPEECH_OTID || '' }}
 
         steps:
             - name: Checkout code
