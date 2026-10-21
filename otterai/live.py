@@ -2,11 +2,13 @@
 
 import json
 import re
+import ssl
 import threading
 import time
 
-from .exceptions import OtterAIException
+import certifi
 
+from .exceptions import OtterAIException
 
 SAMPLE_RATE = 16_000
 CHANNELS = 1
@@ -138,6 +140,7 @@ class LiveSpeechRecorder:
                 origin="https://otter.ai",
                 timeout=5,
                 enable_multithread=True,
+                sslopt={"context": ssl.create_default_context(cafile=certifi.where())},
             )
             self._socket.send(
                 json.dumps(
