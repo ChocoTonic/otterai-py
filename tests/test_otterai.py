@@ -162,6 +162,32 @@ def test_get_speech_no_userid_expected_exception():
         otter.get_speech("dummyid")
 
 
+def test_search_speeches_uses_advanced_search_endpoint():
+    otter = OtterAI()
+    otter._userid = 42
+    response = Mock(status_code=200)
+    response.json.return_value = {"speeches": []}
+    otter._session.get = Mock(return_value=response)
+
+    result = otter.search_speeches("incident review", size=20, scroll_id="next")
+
+    assert result["status"] == 200
+    otter._session.get.assert_called_once_with(
+        OtterAI.API_BASE_URL + "advanced_search",
+        params={"query": "incident review", "size": 20, "scroll_id": "next"},
+    )
+
+
+def test_search_speeches_rejects_invalid_inputs():
+    otter = OtterAI()
+    otter._userid = 42
+
+    with pytest.raises(ValueError, match="query"):
+        otter.search_speeches("  ")
+    with pytest.raises(ValueError, match="size"):
+        otter.search_speeches("query", size=101)
+
+
 def test_upload_speech_no_userid_expected_exception():
     otter = OtterAI()
     with pytest.raises(OtterAIException, match="userid is invalid"):
