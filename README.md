@@ -82,6 +82,17 @@ Query a speech:
 otter.query_speech(QUERY, OTID)
 ```
 
+Search transcript content across all accessible speeches:
+
+```python
+first_page = otter.search_speeches(QUERY, size=50)
+next_page = otter.search_speeches(
+    QUERY,
+    size=50,
+    scroll_id=first_page["data"]["scroll_id"],
+)
+```
+
 Upload a speech.
 
 **Optional parameters**: `content_type` (default: `audio/mp4`)

@@ -134,6 +134,26 @@ class OtterAI:
 
         return self._handle_response(response)
 
+    def search_speeches(self, query, size=50, scroll_id=None):
+        """Search transcript content across the authenticated user's speeches."""
+        if self._is_userid_invalid():
+            raise OtterAIException("userid is invalid")
+        if not str(query).strip():
+            raise ValueError("query must not be empty")
+        if not 1 <= int(size) <= 100:
+            raise ValueError("size must be between 1 and 100")
+
+        payload = {
+            "query": str(query).strip(),
+            "size": int(size),
+        }
+        if scroll_id:
+            payload["scroll_id"] = str(scroll_id)
+        response = self._session.get(
+            OtterAI.API_BASE_URL + "advanced_search", params=payload
+        )
+        return self._handle_response(response)
+
     def upload_speech(self, file_name, content_type="audio/mp4"):
         speech_upload_params_url = OtterAI.API_BASE_URL + "speech_upload_params"
         speech_upload_prod_url = OtterAI.S3_BASE_URL + "speech-upload-prod"
